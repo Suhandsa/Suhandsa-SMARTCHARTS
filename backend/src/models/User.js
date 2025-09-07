@@ -12,7 +12,7 @@ const userSchema = new  mongoose.Schema({
         unique:true
     },
     password:{
-        typr:String,
+        type:String,
         required:true,
         minlength:6
     },
@@ -46,12 +46,9 @@ const userSchema = new  mongoose.Schema({
     }]
 },{timestamps:true});
 
-const User = mongoose.model("User",userSchema);
-
-
 //hashing before saving the password
 userSchema.pre("save",async function (next) {
-    if(!this.isModified("password")) next();
+    if(!this.isModified("password")) return next();
     try{
         const salt=await  bcrypt.genSalt(10);
         const hash= await bcrypt.hash(this.password,salt);
@@ -62,6 +59,19 @@ userSchema.pre("save",async function (next) {
         next(error);
     }
 })
+
+userSchema.methods.comparePassword=async function (candidatePassword){
+    try{
+        return await bcrypt.compare(candidatePassword,this.password);
+        }catch(error){
+        throw new Error(error);
+        }
+}
+
+const User = mongoose.model("User",userSchema);
+
+
+
 
 
 export default User;

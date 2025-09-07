@@ -1,10 +1,11 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-export const login = async function(req, res){
-    const {email,password,fullName}= req.body;
+
+export const signup = async function(req, res){
+    const {email,password,fullName}=  req.body;
     
     try{
-        if(!email || !password || !fullNmae){
+        if(!email || !password || !fullName){
         return res.status(400).json({message:"All fields are required"});
     }
 
@@ -32,7 +33,7 @@ export const login = async function(req, res){
     //profile pic
     const randomAvatar=`https://avatar.iran.liara.run/username?username=${fullName}`;
     //new user
-    const newUser = new User.create({
+    const newUser = await User.create({
         email,
         fullName,
        password,
@@ -43,7 +44,7 @@ export const login = async function(req, res){
     //TODO USER IN STREAM AS WELL
 
     //creating the token
-    const token= jwt.sign({userId:newUser._Id},process.env.JWT_SECRET_KEY,{expiresIn:"7d"});
+    const token= jwt.sign({userId:newUser._id},process.env.JWT_SECRET_KEY,{expiresIn:"7d"});
 
 
    res.cookie("jwt",token,{
@@ -53,9 +54,8 @@ export const login = async function(req, res){
     secure:process.env.NODE_ENV==="production",
     });
    
-    res.status(201).json({success:true, User:newUser,message:"User created", token, userId:newUser._Id});
-
-
+    res.status(201).json({success:true, user:newUser,message:"User created", token, userId:newUser._Id});
+    
 
     }
     catch (error){
@@ -67,10 +67,46 @@ export const login = async function(req, res){
 
 
 
-export const logout = async function(req, res){
-    res.send("hello logout");
+
+
+export const login = async function(req, res){
+  try{
+     const {email,password}=req.body;
+    if(!email || !password){
+        return res.status(400).json({message:"Please provide email and password"});
+    }
+    const user = await User.findOne({email});
+    if(!user){
+        return res.status(400).json({message:"Invalid email or password"});
+    }
+    const isPasswordCorrect = await user.comparePassword(password);
+    if(!isPasswordCorrect){
+        return res.status(400).json({message:"Invalid email or password"});
+    }
+    //creating the token
+    const token= jwt.sign({
+        userId:user._id,
+        },process.env.JWT_SECRET_KEY,{expiresIn:"7d"});
+
+        //setting the cookie
+    res.cookie("jwt",token,{
+        maxAge:7*24*60*60*1000,
+        httpOnly:true,//prvebt from xss attack
+        sameSite:"strict",
+        secure:process.env.NODE_ENV==="production",
+        });
+    res.status(200).json({success:true, user:user,message:"User logged in", token, userId:user._Id});
+
+
+
+  }catch(error){
+  console.log("error in login controller",error);
+    res.status(500).json({success:false, message:"Internal server error"});
+  }
 }
 
-export const signup = async function(req, res){
-    res.send("hello signup");
+export const logout = async function(req, res){
+    res.clearCookie("jwt");
+    res.status(200).json({success:true, message:"User logged out"});
+
 }
