@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import cookieParse from "cookie-parser";
 
 
 // import  dotenv from "dotenv";
@@ -14,8 +15,11 @@ const app = express();
 const PORT=process.env.PORT;
 
 app.use(express.json());
+app.use(cookieParse());
+
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/outh",authRoutes);
+
 
 
 app.listen(PORT, () =>{

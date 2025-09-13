@@ -123,3 +123,43 @@ export const logout = async function(req, res){
     res.status(200).json({success:true, message:"User logged out"});
 
 }
+
+export async function onboard(req,res){
+    //console.log("hi");
+   //  console.log(req.user);
+
+   try{
+        const userId=req.user._id;
+
+        const {fullName,bio,nativeLanguage,learningLanguage,location}=req.body;
+
+        if(!fullName || !bio || !nativeLanguage || !learningLanguage || !location){
+            res.status(400).json({
+                message:"All fields  are required",
+                missingFields:[
+                    !fullName && "fullname",
+                    !bio && "bio",
+                    !nativeLanguage && "nativeLanguage",
+                    !learningLanguage && "learningLanguage",
+                    !location && "location",
+                ],
+            });
+        }
+        const updatedUser=await User.findByIdAndUpdate(userId,{
+            ...req.body,
+            isOnboarded:true,
+        },{new:true})
+
+        if(!updatedUser){
+            return res.status(404).json({message:"User not found"});
+        }
+        //to do update in the getstream
+        res.status(200).json({success:true,user:updatedUser});
+
+   }catch(error){
+       console.log("Onboarding error:",error);
+       res.status(500).json({message:"Internal server error"});
+   }
+
+
+}
