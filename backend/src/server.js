@@ -9,6 +9,7 @@ import cookieParse from "cookie-parser";
 import "dotenv/config";
 
 import authRoutes from "./routes/auth.route.js";
+import userRoutes from "./routes/user.route.js";
 import { connectdb } from "./lib/db.js";
 
 const app = express(); 
@@ -19,7 +20,7 @@ app.use(cookieParse());
 
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/outh",authRoutes);
-
+app.use("/api/outh",userRoutes);
 
 
 app.listen(PORT, () =>{
