@@ -23,6 +23,8 @@ app.use("/api/outh",authRoutes);
 app.use("/api/outh",userRoutes);
 
 
+
+
 app.listen(PORT, () =>{
     console.log(`Server started on port ${PORT}`);
     connectdb();
